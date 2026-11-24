@@ -1,28 +1,68 @@
+<div align="center">
+
+<img src="xbc.png" width="160" alt="Xbc.ImportExport" />
+
 # Xbc.ImportExport
 
-Xbc.ImportExport 是 Xbc 生态的轻量声明式导入导出库，提供实体与 Excel（.xlsx）/CSV 文件之间的流式转换与导入模板生成。核心包只定义抽象、列模型与值解析（零第三方依赖），CSV 与 Excel 能力由独立提供者包承载，公共 API 不泄露 CsvHelper / ClosedXML 类型。库不依赖 DI 与任何 Xbc 包，直接实例化即可使用。
+**.NET 轻量声明式导入导出库：实体一键转 Excel / CSV，流式低内存，错误回执闭环。**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/xbc12345/Xbc.ImportExport/blob/master/LICENSE)
+[![.NET 8](https://img.shields.io/badge/.NET%208.0-blue)](https://github.com/xbc12345/Xbc.ImportExport)
+<!-- TODO: 当前为静态占位 NuGet 徽章；包发布到 NuGet 后请替换为官方徽章，如 https://img.shields.io/nuget/v/Xbc.ImportExport.svg -->
+[![NuGet](https://img.shields.io/badge/NuGet-3.0.0-blue)](https://www.nuget.org/packages/Xbc.ImportExport)
+
+</div>
+
+---
+
+## 为什么做这个库
+
+现存的 .NET 导入导出方案呈现两极：**直接用 CsvHelper / ClosedXML 手写**（表头映射、类型转换、错误定位、回执生成全部样板代码，每个业务模块重复一遍），**重型报表组件**（绑定特定对象模型或宿主环境，与服务端解耦困难）。Xbc.ImportExport 占据两者之间的空档：
+
+- **声明式列映射**：`[ImportColumn]` / `[ExportColumn]` 特性声明即映射，列名、格式、默认值、转换器一处声明，导入绑定与导出、模板共用同一份声明
+- **流式低内存**：导入逐行产出 `ParsedRow<T>`，导出消费 `IAsyncEnumerable<T>`，内存占用与文件行数无关
+- **格式可插拔**：核心包零第三方依赖、不依赖 DI 与任何 Xbc 包，直接实例化即可使用；CSV / Excel 能力由独立提供者包承载，公共 API 不泄露 CsvHelper / ClosedXML 类型
+- **错误可回执**：三态错误模式 + 业务校验装饰器 + 错误回执文件，Web 上传"导入 → 修正 → 重交"闭环开箱即用
+
+## 特性
+
+- **声明式列模型** —— 特性声明 / 强类型选项选择器 / 直填列定义三来源，程序化列与特性列择一生效，列名留空回退属性名，解析期快速失败校验
+- **值解析白名单** —— 18 种字面量类型（含 `Nullable<>` 包装）；`decimal` 不经 `double` 中转防精度截断；枚举越界数值、窄化溢出、无符号负数拦截
+- **三态错误模式** —— `Lenient` 静默回退 / `Strict` 快速失败定位行列 / `Collect` 记录错误继续产出；转换器异常与返回值类型不兼容走同一套分派
+- **业务校验装饰器** —— `ValidateWith` 流式逐行校验，错误并入 `row.Errors` 与解析错误同处一行，可链式多条规则
+- **错误回执** —— `GenerateErrorReportAsync` 生成与导入格式一致的回执文件（错误行高亮、错误信息列），修正后重新提交
+- **导入模板生成** —— Excel 模板含表头样式、必填红标、枚举下拉校验、独立字段说明 Sheet；CSV 纯文本模板
+- **导出能力** —— 强类型单元格（数值 / 布尔 / 日期 / 时间间隔）、`MaxRows` 上限、Excel 超限自动分片多工作表、CSV 公式注入防护与 RFC 4180 写出
+- **异常体系收敛** —— CsvHelper / ClosedXML 异常统一包装为域内异常，底层异常经 `InnerException` 保留，不泄露到业务层
+
+## 安装
+
+核心包必装，CSV / Excel 提供者包按所用文件格式选装（版本号 `3.0.0` 为占位，以 NuGet 实际发布版本为准）：
+
+```xml
+<ItemGroup>
+  <!-- 核心包（支持 netstandard2.0 / net8.0 / net461） -->
+  <PackageReference Include="Xbc.ImportExport" Version="3.0.0" />
+
+  <!-- 提供者包：按所用文件格式选装 -->
+  <PackageReference Include="Xbc.ImportExport.Csv" Version="3.0.0" />
+  <PackageReference Include="Xbc.ImportExport.Excel" Version="3.0.0" />
+</ItemGroup>
+```
 
 ## 包架构
 
 | 包 | 职责 | 第三方依赖 |
 | --- | --- | --- |
-| `Xbc.ImportExport` | 核心包：`IImporter` / `IExporter` 抽象、列模型与选项、值解析器、业务校验装饰器、错误回执、异常体系 | 无（仅 `Microsoft.Bcl.AsyncInterfaces`） |
+| `Xbc.ImportExport` | 核心包：`IImporter` / `IExporter` 抽象、列模型与选项、值解析器、业务校验装饰器、错误回执、异常体系 | 无 |
 | `Xbc.ImportExport.Csv` | CSV 提供者包：`CsvImporter` / `CsvExporter` | `CsvHelper` |
 | `Xbc.ImportExport.Excel` | Excel 提供者包：`ExcelImporter` / `ExcelExporter`，.xlsx 读写、工作表选择、分片导出 | `ClosedXML` |
 
-三个包均面向 `netstandard2.0;net8.0;net461`，net461 应用可直接引用。ClosedXML 与 CsvHelper 的官方支持基线为 .NET Framework 4.6.2，net461 目标经 netstandard2.0 资产运行，可用但不在官方承诺范围。
-
-## 安装
-
-```bash
-dotnet add package Xbc.ImportExport                      # 核心包
-dotnet add package Xbc.ImportExport.Csv                  # CSV 提供者（按需）
-dotnet add package Xbc.ImportExport.Excel                # Excel 提供者（按需）
-```
+ClosedXML 与 CsvHelper 的官方支持基线为 .NET Framework 4.6.2，net461 目标经 netstandard2.0 资产运行，可用但不在官方承诺范围。
 
 ## 快速开始
 
-### 导出
+### 1. 导出
 
 实体属性标记 `[ExportColumn]`，导出器接收异步数据流并返回文件流：
 
@@ -67,7 +107,7 @@ public class ExportDemo
 }
 ```
 
-### 导入
+### 2. 导入
 
 导入器流式逐行产出 `ParsedRow<T>`（实体 + 行号 + 原始值字典 + 行级错误），调用方按需消费并自行入库：
 
@@ -112,7 +152,7 @@ public class ImportDemo
 }
 ```
 
-### 生成导入模板
+### 3. 生成导入模板
 
 模板按 `[ImportColumn]` 声明生成，供填写方下载后填写再导入：
 
@@ -356,3 +396,7 @@ ImportExportException（抽象基类）
 
 - 模板生成仅支持特性声明列，程序化列暂不支持模板
 - float 溢出文本（如 `3.5E+38`）在 .NET 8 按 IEEE 754 解析为 `PositiveInfinity`（不算失败），在 .NET Framework 4.6.1 按解析失败处理，行为随运行时而异
+
+## License
+
+本项目基于 [MIT License](LICENSE) 开源发布。
