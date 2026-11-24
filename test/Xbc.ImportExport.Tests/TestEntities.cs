@@ -468,6 +468,38 @@ namespace Xbc.ImportExport.Tests
         }
     }
 
+    /// <summary>返回类型不匹配的导入转换器（恒返回 double，验证转换器返回值类型守卫）。</summary>
+    public class WrongTypeImportConverter : IImportValueConverter
+    {
+        public object Convert(string value)
+        {
+            return double.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <summary>返回装箱 int 的导入转换器（可空目标属性的类型兼容守卫正例）。</summary>
+    public class BoxedIntImportConverter : IImportValueConverter
+    {
+        public object Convert(string value)
+        {
+            return int.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <summary>转换器返回类型不匹配导入实体（数量列转换器恒返回 double 给 int 属性）。</summary>
+    public class ConverterTypeMismatchDto
+    {
+        [ImportColumn("数量", ConverterType = typeof(WrongTypeImportConverter))]
+        public int Count { get; set; }
+    }
+
+    /// <summary>可空数值转换器导入实体（转换器返回装箱 int 给 int? 属性）。</summary>
+    public class NullableConverterDto
+    {
+        [ImportColumn("数量", ConverterType = typeof(BoxedIntImportConverter))]
+        public int? Count { get; set; }
+    }
+
     /// <summary>抛异常转换器导入实体（数量列声明抛异常转换器）。</summary>
     public class ConverterThrowDto
     {

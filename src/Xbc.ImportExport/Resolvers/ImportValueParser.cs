@@ -26,12 +26,13 @@ namespace Xbc.ImportExport
                 return ResolveDeclaredDefault(mapping);
             }
 
-            // 声明式转换器优先；异常按错误模式分派（严格抛数据异常 / 收集记录 / 宽容静默回退 null）
+            // 声明式转换器优先；异常与返回值类型不兼容均按错误模式分派（严格抛数据异常 / 收集记录 / 宽容静默回退 null）
             if (mapping.Column.Converter != null)
             {
+                object converted;
                 try
                 {
-                    return mapping.Column.Converter(value);
+                    converted = mapping.Column.Converter(value);
                 }
                 catch (Exception ex)
                 {
@@ -39,6 +40,20 @@ namespace Xbc.ImportExport
                         $"列 '{mapping.Column.Name}' 的值 '{value}' 转换器执行失败：{ex.Message}",
                         rowNumber, mapping.Column.Name, errorMode, errors, ex);
                 }
+
+                // 类型守卫：返回值必须与属性类型兼容（null 放行 = 跳过赋值语义）。
+                // 不兼容值直送 SetValue 抛裸 ArgumentException，被导入器外层包装成无列名异常，定位全丢；
+                // 借鉴 DbAccess EntityValueConverter 的转换守卫，在此统一携带行号/列名/双类型按错误模式分派
+                var underlying = Nullable.GetUnderlyingType(mapping.Column.Property.PropertyType)
+                                 ?? mapping.Column.Property.PropertyType;
+                if (converted != null && !underlying.IsInstanceOfType(converted))
+                {
+                    return OnFailure(
+                        $"列 '{mapping.Column.Name}' 的转换器返回了 '{converted.GetType()}'（值 '{converted}'），无法赋给 '{ColumnResolverCore.GetDisplayName(mapping.Column.Property.PropertyType)}' 属性",
+                        rowNumber, mapping.Column.Name, errorMode, errors, null);
+                }
+
+                return converted;
             }
 
             if (TryParse(value, mapping.Column.Property.PropertyType, mapping.Column.Format, out var result))
