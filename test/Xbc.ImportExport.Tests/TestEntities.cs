@@ -458,4 +458,49 @@ namespace Xbc.ImportExport.Tests
         [ImportColumn("设备名称")]
         public string Name { get; set; }
     }
+
+    /// <summary>抛异常导入转换器（转换器执行失败的负例夹具，验证三种错误模式分派）。</summary>
+    public class ThrowingImportConverter : IImportValueConverter
+    {
+        public object Convert(string value)
+        {
+            throw new InvalidOperationException("转换器内部失败");
+        }
+    }
+
+    /// <summary>抛异常转换器导入实体（数量列声明抛异常转换器）。</summary>
+    public class ConverterThrowDto
+    {
+        [ImportColumn("数量", ConverterType = typeof(ThrowingImportConverter))]
+        public int Count { get; set; }
+    }
+
+    /// <summary>字符串声明默认值实体（验证字符串默认值的解析路径与不兼容转换）。</summary>
+    public class TextDefaultDto
+    {
+        [ImportColumn("数量", DefaultValue = "100")]
+        public int Count { get; set; }
+
+        [ImportColumn("编码", DefaultValue = 123)]
+        public string Code { get; set; }
+
+        [ImportColumn("价格", DefaultValue = "abc")]
+        public double Price { get; set; }
+    }
+
+    /// <summary>导出转换器直接返回 null（导出侧转换器空返回的落单元格行为）。</summary>
+    public class NullReturningExportConverter : IExportValueConverter
+    {
+        public object Convert(object value)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>转换器返回 null 的导出实体。</summary>
+    public class NullConverterExportDto
+    {
+        [ExportColumn("编码", ConverterType = typeof(NullReturningExportConverter))]
+        public string Code { get; set; }
+    }
 }

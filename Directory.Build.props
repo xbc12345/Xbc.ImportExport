@@ -4,10 +4,11 @@
   <!-- ========== 统一编译属性 ========== -->
 
   <PropertyGroup>
-    <!-- 目标框架：netstandard2.0 覆盖最广，net8.0 启用现代优化，net461 显式支持旧式 -->
-    <!-- 各 csproj 可在自身文件中覆盖 TargetFrameworks -->
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-
+    <!-- 目标框架：各项目自行声明（多目标库写 TargetFrameworks，测试项目写 TargetFramework）。
+         此处不设默认值：类库项目均已显式声明；若在此默认 TargetFrameworks，单 TargetFramework 的测试项目
+         会被 NuGet 识别为多目标还原，生成的 .nuget.g.props 导入组带 TFM 条件，而该导入发生在
+         Microsoft.Common.props 阶段（TargetFramework 尚未赋值），导致包 build/ 下的 props（如 xunit
+         测试适配器）永不导入，测试静默不可发现 -->
     <!-- 语言与 C# 版本 -->
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
@@ -16,7 +17,7 @@
     <!-- 程序集信息 -->
     <Company>Xbc</Company>
     <Authors>Xbc</Authors>
-    <Product>Xbc.Framework</Product>
+    <Product>Xbc.ImportExport</Product>
     <Copyright>Copyright © Xbc 2026</Copyright>
 
     <!-- 版本号：所有类库统一版本，便于协调发布 -->
@@ -25,7 +26,7 @@
     <FileVersion>3.0.0.0</FileVersion>
 
     <!-- NuGet 包元数据 -->
-    <RepositoryUrl>https://github.com/xbc/Xbc.Framework</RepositoryUrl>
+    <RepositoryUrl>https://github.com/xbc12345/Xbc.ImportExport</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

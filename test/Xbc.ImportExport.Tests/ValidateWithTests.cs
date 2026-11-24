@@ -82,6 +82,20 @@ namespace Xbc.ImportExport.Tests
         }
 
         [Fact]
+        public async Task ValidateWith_NullSource_ThrowsArgumentNullException()
+        {
+            // 数据源为 null：异步迭代器的参数校验在首次枚举时抛出
+            IAsyncEnumerable<ParsedRow<SimpleDto>> source = null;
+
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await foreach (var row in source.ValidateWith(d => null))
+                {
+                }
+            });
+        }
+
+        [Fact]
         public async Task ValidateWith_NullValidator_ThrowsArgumentNullException()
         {
             var content = "设备编码,设备名称\r\nD001,温度传感器";
