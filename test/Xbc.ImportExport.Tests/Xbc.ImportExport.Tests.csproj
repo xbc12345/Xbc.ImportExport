@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Xbc.ImportExport\Xbc.ImportExport.csproj" />
+    <ProjectReference Include="..\..\src\Xbc.ImportExport.Csv\Xbc.ImportExport.Csv.csproj" />
+    <ProjectReference Include="..\..\src\Xbc.ImportExport.Excel\Xbc.ImportExport.Excel.csproj" />
+  </ItemGroup>
+
+  <Target Name="DumpAdapterDiag1" BeforeTargets="AssignTargetPaths">
+    <Message Text="DIAG1_BEFORE_ASSIGN=[@(None->WithMetadataValue('CopyToOutputDirectory','PreserveNewest'))]" Importance="high" />
+  </Target>
+
+  <Target Name="DumpAdapterDiag2" AfterTargets="AssignTargetPaths">
+    <Message Text="DIAG2_AFTER_ASSIGN=[@(None->WithMetadataValue('CopyToOutputDirectory','PreserveNewest'))]" Importance="high" />
+    <Message Text="DIAG2_NONE_WITH_TP=[@(NoneWithTargetPath)]" Importance="high" />
+  </Target>
+
+  <Target Name="DumpAdapterDiag" AfterTargets="Build">
+    <Message Text="DIAG_NPR=[$(NuGetPackageRoot)]" Importance="high" />
+    <Message Text="DIAG_ERPI=[$(ExcludeRestorePackageImports)]" Importance="high" />
+    <Message Text="DIAG_TF=[$(TargetFramework)]" Importance="high" />
+    <Message Text="DIAG_CAPS=[@(ProjectCapability)]" Importance="high" />
+    <Message Text="DIAG_NONE_COPY=[@(None->WithMetadataValue('CopyToOutputDirectory','PreserveNewest'))]" Importance="high" />
+    <Message Text="DIAG_COPYPIPE_TESTADAPTER=[@(AllItemsFullPathWithTargetPath->WithMetadataValue('Filename','xunit.runner.visualstudio.testadapter')->Count())]" Importance="high" />
+    <Message Text="DIAG_FILEWRITES_TESTADAPTER=[@(FileWrites->WithMetadataValue('Filename','xunit.runner.visualstudio.testadapter')->Count())]" Importance="high" />
+  </Target>
+
+</Project>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!-- ========== NuGet 包图标（统一引用仓库根目录的 xbc.png） ========== -->
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)xbc.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!-- ========== NuGet 包自述文件（自动包含项目目录或上级模块目录的 README.md） ========== -->
+  <!-- PackageReadmeFile 属性在 Directory.Build.props 中条件设置，此处仅负责将文件打入包 -->
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true' AND Exists('README.md')">
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true' AND !Exists('README.md') AND Exists('..\README.md')">
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

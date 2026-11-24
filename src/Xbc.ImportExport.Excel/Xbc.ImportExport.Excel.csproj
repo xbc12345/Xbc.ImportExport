@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net461</TargetFrameworks>
+    <RootNamespace>Xbc.ImportExport.Excel</RootNamespace>
+    <Description>Xbc.ImportExport Excel 实现包 - 基于 ClosedXML 的流式 xlsx 导入导出与导入模板生成（表头样式、数据校验、示例行）</Description>
+    <PackageTags>xbc;import;export;excel;closedxml;xlsx</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xbc.ImportExport\Xbc.ImportExport.csproj" />
+  </ItemGroup>
+
+</Project>

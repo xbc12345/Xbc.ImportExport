@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  中央 NuGet 版本管理
+  所有 csproj 中的 PackageReference 不再指定 Version，统一在此处管理
+  添加新依赖时：1) 在此处添加版本  2) 在 csproj 中只写 <PackageReference Include="..." />
+-->
+<Project>
+
+  <!-- ========== 直接依赖 ========== -->
+  <ItemGroup>
+    <PackageVersion Include="ClosedXML" Version="0.104.2" />
+    <PackageVersion Include="CsvHelper" Version="33.0.1" />
+  </ItemGroup>
+
+  <!-- ========== net461 Polyfill（Directory.Build.props 自动添加） ========== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.9" />
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+    <PackageVersion Include="System.ValueTuple" Version="4.6.2" />
+    <PackageVersion Include="System.Buffers" Version="4.6.1" />
+    <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
+    <PackageVersion Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+    <PackageVersion Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+  </ItemGroup>
+
+  <!-- ========== 测试框架 ========== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="xunit" Version="2.8.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
+  </ItemGroup>
+
+  <!-- ========== 源码链接（GITHUB_ACTIONS 构建时启用） ========== -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

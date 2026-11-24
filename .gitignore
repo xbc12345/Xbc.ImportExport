@@ -1,0 +1,89 @@
+## Xbc.Framework .gitignore
+## 基于 VisualStudio.gitignore，补充 monorepo 专用规则
+
+# ========== Visual Studio 临时文件 ==========
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+mono_crash.*
+
+# ========== 构建产物 ==========
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# ========== Monorepo 统一产物目录 ==========
+artifacts/
+artifacts/**/
+
+# ========== Visual Studio 缓存 ==========
+.vs/
+Generated\ Files/
+
+# ========== 测试结果 ==========
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+
+# ========== NuGet ==========
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# ========== ReSharper / Rider ==========
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+.idea/
+
+# ========== VSCode ==========
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ========== Node.js（文档构建工具） ==========
+node_modules/
+package-lock.json
+
+# ========== 文档构建产物 ==========
+.trae/html/
+guides/html/
+/index.html
+
+# ========== 其他 ==========
+*.tss
+*.jmconfig
+*.bak
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+/src/archived

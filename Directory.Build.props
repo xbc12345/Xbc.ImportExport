@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!-- ========== 统一编译属性 ========== -->
+
+  <PropertyGroup>
+    <!-- 目标框架：netstandard2.0 覆盖最广，net8.0 启用现代优化，net461 显式支持旧式 -->
+    <!-- 各 csproj 可在自身文件中覆盖 TargetFrameworks -->
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+
+    <!-- 语言与 C# 版本 -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- 程序集信息 -->
+    <Company>Xbc</Company>
+    <Authors>Xbc</Authors>
+    <Product>Xbc.Framework</Product>
+    <Copyright>Copyright © Xbc 2026</Copyright>
+
+    <!-- 版本号：所有类库统一版本，便于协调发布 -->
+    <Version>3.0.0</Version>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+
+    <!-- NuGet 包元数据 -->
+    <RepositoryUrl>https://github.com/xbc/Xbc.Framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- 符号包关闭：本地构建的 PDB 内嵌本地路径（SourceLink 路径映射仅 GITHUB_ACTIONS 构建时生效），发布符号包会泄露本地信息 -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- 库专用属性 -->
+    <IsPackable>true</IsPackable>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>xbc.png</PackageIcon>
+    <!-- 自述文件：优先项目目录 README.md，其次上级模块目录 README.md；都不存在则不设置 -->
+    <PackageReadmeFile Condition="Exists('README.md')">README.md</PackageReadmeFile>
+    <PackageReadmeFile Condition="'$(PackageReadmeFile)' == '' AND Exists('..\README.md')">README.md</PackageReadmeFile>
+
+    <!-- 警告处理 -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>CS0168;CS0219;CS0414</WarningsAsErrors>
+    <!-- NU1701: xunit.runner.visualstudio 的 lib 仅有 .NETFramework 目标，对 net8.0 测试项目无实际影响 -->
+    <!-- IDE0xxx 样式建议不进入构建管线，NoWarn 无法抑制，统一在 .editorconfig 的 dotnet_diagnostic 区段配置 -->
+    <NoWarn>CS1591;CS1701;CS8632;CA1510;CA1861;NU1504;NU1701</NoWarn>
+
+    <!-- 输出路径统一 -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\</BaseOutputPath>
+    <PackageOutputPath>$(BaseOutputPath)nuget\</PackageOutputPath>
+  </PropertyGroup>
+
+  <!-- ========== 按目标框架条件编译 ========== -->
+
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <DefineConstants>$(DefineConstants);NETFRAMEWORK</DefineConstants>
+    <!-- net461 不支持隐式 usings 中的某些命名空间 -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net9.0'">
+    <DefineConstants>$(DefineConstants);NETCOREAPP</DefineConstants>
+  </PropertyGroup>
+
+  <!-- ========== net461 Polyfill 包（自动添加） ========== -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
+    <!-- Microsoft.Extensions.* 8.0 包官方建议 net461 -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.ValueTuple" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
+    <!-- init/record polyfill -->
+    <Compile Include="$(MSBuildThisFileDirectory)build\Polyfills.cs" />
+  </ItemGroup>
+
+  <!-- ========== 中央 NuGet 版本管理 ========== -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!-- ========== Source Link（可选，需 Git 仓库） ========== -->
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true' AND '$(GITHUB_ACTIONS)' == 'true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net461</TargetFrameworks>
+    <RootNamespace>Xbc.ImportExport</RootNamespace>
+    <Description>Xbc.ImportExport 导入导出框架核心包 - IImporter（含导入模板生成）/IExporter 抽象、特性驱动列映射与统一异常体系，配合 Csv/Excel 实现包使用</Description>
+    <PackageTags>xbc;import;export;excel;csv</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Xbc.ImportExport.Csv" />
+    <InternalsVisibleTo Include="Xbc.ImportExport.Excel" />
+    <InternalsVisibleTo Include="Xbc.ImportExport.Tests" />
+  </ItemGroup>
+
+</Project>
