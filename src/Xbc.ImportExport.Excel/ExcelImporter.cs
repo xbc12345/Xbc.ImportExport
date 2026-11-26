@@ -287,7 +287,7 @@ namespace Xbc.ImportExport.Excel
 
                     // 2. 数据校验下拉（枚举/允许值）
                     if (effectiveOptions.IncludeDataValidation)
-                        AddDataValidations(worksheet, columns);
+                        AddDataValidations(workbook, worksheet, columns);
 
                     // 3. 示例行
                     if (effectiveOptions.IncludeExampleRows)
@@ -304,23 +304,57 @@ namespace Xbc.ImportExport.Excel
             }
         }
 
-        private static void AddDataValidations(IXLWorksheet worksheet, List<TemplateColumn> columns)
-        {
-            for (var i = 0; i < columns.Count; i++)
-            {
-                var col = columns[i];
-                if (col.AllowedValues == null || col.AllowedValues.Count == 0)
-                    continue;
+        /// <summary>允许值下拉的隐藏工作表名（字面列表超长时承载引用区域）。</summary>
+        private const string AllowedValuesSheetName = "下拉选项";
 
-                var columnLetter = XLHelper.GetColumnLetterFromNumber(i + 1);
-                var range = worksheet.Range(columnLetter + "2:" + columnLetter + "1000");
-                // 范围尚未挂校验时 GetDataValidation 返回 null，须用 CreateDataValidation 创建
-                var validation = range.CreateDataValidation();
-                // 字面列表须整体双引号包裹（OOXML 规范），裸写会被 Excel 判为非法公式引用并在打开时剥离
-                validation.List("\"" + string.Join(",", col.AllowedValues) + "\"");
-                validation.ErrorMessage = $"列 '{col.Name}' 值不在允许范围内";
-                validation.ErrorTitle = "输入无效";
-                validation.ErrorStyle = XLErrorStyle.Warning;
+        /// <summary>Excel 数据校验公式上限（255 字符）；字面列表超限时改写隐藏工作表的引用区域。</summary>
+        private const int ValidationFormulaMaxLength = 255;
+
+        private static void AddDataValidations(IXLWorkbook workbook, IXLWorksheet worksheet, List<TemplateColumn> columns)
+        {
+            IXLWorksheet listSheet = null;
+            var nextListColumn = 0;
+
+            try
+            {
+                for (var i = 0; i < columns.Count; i++)
+                {
+                    var col = columns[i];
+                    if (col.AllowedValues == null || col.AllowedValues.Count == 0)
+                        continue;
+
+                    var columnLetter = XLHelper.GetColumnLetterFromNumber(i + 1);
+                    var range = worksheet.Range(columnLetter + "2:" + columnLetter + "1000");
+                    var validation = range.CreateDataValidation();
+                    validation.ErrorMessage = $"列 '{col.Name}' 值不在允许范围内";
+                    validation.ErrorTitle = "输入无效";
+                    validation.ErrorStyle = XLErrorStyle.Warning;
+
+                    var literal = "\"" + string.Join(",", col.AllowedValues) + "\"";
+                    if (literal.Length <= ValidationFormulaMaxLength)
+                    {
+                        // 字面列表须整体双引号包裹（OOXML 规范），裸写会被 Excel 判为非法公式引用并在打开时剥离
+                        validation.List(literal);
+                        continue;
+                    }
+
+                    // 字面列表超过 Excel 公式 255 字符上限时 Excel 打开会剥离校验，
+                    // 改写隐藏工作表的独立列（每个字段一列，1 行起），下拉引用该区域绕开上限
+                    if (listSheet == null)
+                        listSheet = workbook.Worksheets.Add(AllowedValuesSheetName);
+
+                    nextListColumn++;
+                    var listColumnLetter = XLHelper.GetColumnLetterFromNumber(nextListColumn);
+                    for (var v = 0; v < col.AllowedValues.Count; v++)
+                        listSheet.Cell(v + 1, nextListColumn).Value = col.AllowedValues[v];
+
+                    validation.List($"'{AllowedValuesSheetName}'!${listColumnLetter}$1:${listColumnLetter}${col.AllowedValues.Count}");
+                }
+            }
+            finally
+            {
+                // 仅在确实写入了引用区域时创建并隐藏，短列表模板不产生额外工作表
+                listSheet?.Hide();
             }
         }
 

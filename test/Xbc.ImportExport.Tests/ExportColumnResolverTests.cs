@@ -104,5 +104,16 @@ namespace Xbc.ImportExport.Tests
             var column = Assert.Single(columns);
             Assert.Equal("计算值", column.Name);
         }
+
+        [Fact]
+        public void ResolveExportColumns_DuplicateColumnNames_ThrowsExportException()
+        {
+            // 特性路径列名唯一性校验（对齐程序化路径）：两个属性声明同名列名快速失败
+            var ex = Assert.Throws<ExportException>(() => ExportColumnResolver.ResolveExportColumns(typeof(DuplicateExportNameDto)));
+
+            Assert.Contains("列名 '编码' 重复", ex.Message);
+            Assert.Contains("Code", ex.Message);
+            Assert.Contains("Name", ex.Message);
+        }
     }
 }

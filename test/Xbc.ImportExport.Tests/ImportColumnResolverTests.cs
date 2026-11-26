@@ -180,5 +180,16 @@ namespace Xbc.ImportExport.Tests
             Assert.Contains("缺少 setter", ex.Message);
             Assert.Contains("Code", ex.Message);
         }
+
+        [Fact]
+        public void ResolveImportColumns_DuplicateColumnNames_ThrowsImportException()
+        {
+            // 特性路径列名唯一性校验（对齐程序化路径）：两个属性声明同名列名快速失败
+            var ex = Assert.Throws<ImportException>(() => ImportColumnResolver.ResolveImportColumns(typeof(DuplicateImportNameDto)));
+
+            Assert.Contains("列名 '编码' 重复", ex.Message);
+            Assert.Contains("Code", ex.Message);
+            Assert.Contains("Name", ex.Message);
+        }
     }
 }

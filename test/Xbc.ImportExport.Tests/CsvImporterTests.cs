@@ -714,6 +714,35 @@ namespace Xbc.ImportExport.Tests
         }
 
         [Fact]
+        public async Task Import_SurroundingWhitespace_ToleratedForNonStringLiterals()
+        {
+            // 非字符串字面量统一去首尾空白（bool/枚举对齐数值 NumberStyles 的空白宽容），字段值不被 CsvHelper 预处理
+            var content = "开关,状态,数量\n true , Online , 123 ";
+
+            var rows = await TestHelpers.ImportAllAsync<WhitespaceTolerantDto>(importer, TestHelpers.ToStream(content));
+
+            var row = Assert.Single(rows);
+            Assert.True(row.Data.On);
+            Assert.Equal(DeviceStatus.Online, row.Data.Status);
+            Assert.Equal(123, row.Data.Count);
+            Assert.Empty(row.Errors);
+        }
+
+        [Fact]
+        public async Task Import_AllWhitespaceValue_CollectMode_RecordsError()
+        {
+            // 纯空白文本去后为空按解析失败处理（与既有各类型行为一致），不静默通过；保留空行走默认值行路径才能看到该行
+            var content = "数量\n   ";
+            var options = new ImportOptions { ErrorMode = ImportErrorMode.Collect, SkipEmptyRows = false };
+
+            var rows = await TestHelpers.ImportAllAsync<WhitespaceTolerantDto>(importer, TestHelpers.ToStream(content), options);
+
+            var row = Assert.Single(rows);
+            Assert.Contains(row.Errors, e => e.Contains("无法解析"));
+            Assert.Equal(0, row.Data.Count);
+        }
+
+        [Fact]
         public async Task Import_NullStream_ThrowsArgumentNullException()
         {
             await Assert.ThrowsAsync<ArgumentNullException>(() =>

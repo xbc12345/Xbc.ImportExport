@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <!-- IAsyncEnumerable 仅 netstandard2.0 需要（net461 由 Directory.Build.props 的 polyfill 组添加，net8.0 框架自带） -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
 
   <ItemGroup>

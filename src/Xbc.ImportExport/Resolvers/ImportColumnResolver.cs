@@ -67,10 +67,12 @@ namespace Xbc.ImportExport
                 .ToList());
         }
 
-        /// <summary>扫描特性声明的导入列（校验 setter 与字面量类型后按 Order 排序，绑定列与模板列投影的共同来源）。</summary>
+        /// <summary>扫描特性声明的导入列（校验 setter、字面量类型与列名唯一性后按 Order 排序，绑定列与模板列投影的共同来源）。</summary>
         private static List<DeclaredImportColumn> ResolveDeclaredColumns(Type targetType)
         {
             var declared = new List<DeclaredImportColumn>();
+            var seenNames = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var prop in ColumnResolverCore.GetInstanceProperties(targetType))
             {
                 var attr = prop.GetCustomAttribute<ImportColumnAttribute>();
@@ -82,6 +84,17 @@ namespace Xbc.ImportExport
 
                 if (attr.ConverterType == null && !ColumnResolverCore.IsLiteralType(prop.PropertyType))
                     throw new ImportException($"类型 '{targetType}' 中 [ImportColumn] 声明的属性 '{prop.Name}' 类型 '{ColumnResolverCore.GetDisplayName(prop.PropertyType)}' 不是受支持的字面量类型（请声明 ConverterType 或改用字面量类型）");
+
+                // 列名重复防线（对齐程序化路径 seenNames 校验）：两个属性声明同名列会映射到同一表头列（同值双写、静默不报错），模板生成重复表头，快速失败
+                var name = string.IsNullOrEmpty(attr.Name) ? prop.Name : attr.Name;
+                if (!seenNames.TryGetValue(name, out var firstOwner))
+                {
+                    seenNames.Add(name, prop);
+                }
+                else
+                {
+                    throw new ImportException($"类型 '{targetType}' 的导入列名 '{name}' 重复（属性 '{firstOwner.Name}' 与 '{prop.Name}' 均声明了该列名，列名在文件内必须唯一）");
+                }
 
                 declared.Add(new DeclaredImportColumn
                 {

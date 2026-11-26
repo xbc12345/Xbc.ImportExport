@@ -535,4 +535,69 @@ namespace Xbc.ImportExport.Tests
         [ExportColumn("编码", ConverterType = typeof(NullReturningExportConverter))]
         public string Code { get; set; }
     }
+
+    /// <summary>重复列名特性导入实体（负例：两个属性声明同名列名，特性路径列名唯一性校验）。</summary>
+    public class DuplicateImportNameDto
+    {
+        [ImportColumn("编码")]
+        public string Code { get; set; }
+
+        [ImportColumn("编码")]
+        public string Name { get; set; }
+    }
+
+    /// <summary>重复列名特性导出实体（负例：两个属性声明同名列名，特性路径列名唯一性校验）。</summary>
+    public class DuplicateExportNameDto
+    {
+        [ExportColumn("编码")]
+        public string Code { get; set; }
+
+        [ExportColumn("编码")]
+        public string Name { get; set; }
+    }
+
+    /// <summary>超长允许值枚举（合成 20 个长名称，字面列表总长超 Excel 数据校验公式 255 字符上限）。</summary>
+    public enum LongValueEnum
+    {
+        AlphaOption00000000000000001,
+        AlphaOption00000000000000002,
+        AlphaOption00000000000000003,
+        AlphaOption00000000000000004,
+        AlphaOption00000000000000005,
+        AlphaOption00000000000000006,
+        AlphaOption00000000000000007,
+        AlphaOption00000000000000008,
+        AlphaOption00000000000000009,
+        AlphaOption00000000000000010,
+        AlphaOption00000000000000011,
+        AlphaOption00000000000000012,
+        AlphaOption00000000000000013,
+        AlphaOption00000000000000014,
+        AlphaOption00000000000000015,
+        AlphaOption00000000000000016,
+        AlphaOption00000000000000017,
+        AlphaOption00000000000000018,
+        AlphaOption00000000000000019,
+        AlphaOption00000000000000020
+    }
+
+    /// <summary>超长枚举模板实体（验证允许值下拉改写隐藏工作表的引用区域）。</summary>
+    public class LongEnumTemplateDto
+    {
+        [ImportColumn("级别")]
+        public LongValueEnum Level { get; set; }
+    }
+
+    /// <summary>非字符串字面量空白宽容实体（验证统一去首尾空白与纯空白失败）。</summary>
+    public class WhitespaceTolerantDto
+    {
+        [ImportColumn("开关")]
+        public bool On { get; set; }
+
+        [ImportColumn("状态")]
+        public DeviceStatus Status { get; set; }
+
+        [ImportColumn("数量")]
+        public int Count { get; set; }
+    }
 }

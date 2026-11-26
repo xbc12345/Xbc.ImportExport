@@ -95,6 +95,25 @@ namespace Xbc.ImportExport.Tests
         }
 
         [Fact]
+        public async Task Generate_LongAllowedValues_ListReferencesHiddenSheet()
+        {
+            // 字面列表超 Excel 数据校验公式 255 字符上限：改写隐藏工作表『下拉选项』的引用区域，Excel 打开不再剥离校验
+            var stream = await importer.GenerateTemplateAsync<LongEnumTemplateDto>(new TemplateOptions());
+            using (var workbook = new XLWorkbook(stream))
+            {
+                var ws = workbook.Worksheet("导入模板");
+
+                var validation = Assert.Single(ws.DataValidations);
+                Assert.Equal("'下拉选项'!$A$1:$A$20", validation.Value);
+
+                var listSheet = workbook.Worksheet("下拉选项");
+                Assert.Equal(XLWorksheetVisibility.Hidden, listSheet.Visibility);
+                Assert.Equal("AlphaOption00000000000000001", listSheet.Cell(1, 1).GetString());
+                Assert.Equal("AlphaOption00000000000000020", listSheet.Cell(20, 1).GetString());
+            }
+        }
+
+        [Fact]
         public async Task Generate_ExampleRows_WritesFallbackValuesWithGrayItalicStyle()
         {
             using (var workbook = await GenerateWorkbookAsync(importer, new TemplateOptions()))

@@ -3,7 +3,7 @@ namespace Xbc.ImportExport
     /// <summary>解析后的行数据（含行号与原始字典）。</summary>
     public sealed class ParsedRow<T> where T : class, new()
     {
-        /// <summary>行号（文件物理行号，从 1 开始；数据行从 StartRow + 1 开始，默认即从 2 开始）。</summary>
+        /// <summary>行号（从 1 开始，数据行从 StartRow + 1 开始，默认即从 2 开始。Excel 为工作表物理行号；CSV 为记录序号，引号内嵌换行的多行字段按 1 条记录计，与文本编辑器物理行号可能不一致）。</summary>
         public int RowNumber { get; set; }
 
         /// <summary>解析后的实体。</summary>

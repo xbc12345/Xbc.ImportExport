@@ -35,7 +35,6 @@
 
     <!-- 库专用属性 -->
     <IsPackable>true</IsPackable>
-    <IncludeContentInPack>true</IncludeContentInPack>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>xbc.png</PackageIcon>

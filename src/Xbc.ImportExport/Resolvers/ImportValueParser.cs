@@ -129,6 +129,13 @@ namespace Xbc.ImportExport
                 return true;
             }
 
+            // 非字符串字面量统一去首尾空白（数值 NumberStyles 本就宽容首尾空白，bool/枚举/Guid/日期与之对齐，
+            // 避免同一文件里 " 123 " 可解析而 " true " 必败的割裂）；字符串列保真不去空白。
+            // 纯空白文本去后为空按解析失败处理（各类型对纯空白文本的原行为一致）
+            value = value.Trim();
+            if (value.Length == 0)
+                return false;
+
             if (underlying == typeof(int) || underlying == typeof(short) || underlying == typeof(byte) || underlying == typeof(sbyte))
             {
                 if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))

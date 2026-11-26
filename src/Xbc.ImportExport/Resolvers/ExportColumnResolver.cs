@@ -63,6 +63,8 @@ namespace Xbc.ImportExport
             return exportColumnCache.GetOrAdd(targetType, t =>
             {
                 var columns = new List<ExportColumn>();
+                var seenNames = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
+
                 foreach (var prop in ColumnResolverCore.GetInstanceProperties(t))
                 {
                     var attr = prop.GetCustomAttribute<ExportColumnAttribute>();
@@ -76,11 +78,22 @@ namespace Xbc.ImportExport
                         throw new ExportException(
                             $"类型 '{t}' 中 [ExportColumn] 声明的属性 '{prop.Name}' 类型 '{ColumnResolverCore.GetDisplayName(prop.PropertyType)}' 不是受支持的字面量类型（请声明 ConverterType 或改用字面量类型）");
 
+                    // 列名重复防线（对齐程序化路径 seenNames 校验）：两个属性声明同名列会产出歧义表头，往返导入无法建立唯一映射，快速失败
+                    var name = string.IsNullOrEmpty(attr.Name) ? prop.Name : attr.Name;
+                    if (!seenNames.TryGetValue(name, out var firstOwner))
+                    {
+                        seenNames.Add(name, prop);
+                    }
+                    else
+                    {
+                        throw new ExportException($"类型 '{t}' 的导出列名 '{name}' 重复（属性 '{firstOwner.Name}' 与 '{prop.Name}' 均声明了该列名，列名在文件内必须唯一）");
+                    }
+
                     columns.Add(new ExportColumn
                     {
                         PropertyName = prop.Name,
                         Property = prop,
-                        Name = string.IsNullOrEmpty(attr.Name) ? prop.Name : attr.Name,
+                        Name = name,
                         Order = attr.Order,
                         Format = attr.Format ?? string.Empty,
                         Width = attr.Width,

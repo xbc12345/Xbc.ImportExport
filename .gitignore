@@ -30,6 +30,10 @@ bld/
 artifacts/
 artifacts/**/
 
+# ========== 本地工具链缓存（沙箱/CI 环境的 SDK 与 NuGet 包目录） ==========
+.dotnet/
+.nuget/
+
 # ========== Visual Studio 缓存 ==========
 .vs/
 Generated\ Files/
