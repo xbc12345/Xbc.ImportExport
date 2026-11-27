@@ -7,6 +7,12 @@ namespace Xbc.ImportExport.Excel
     /// <summary>Excel 导入器（基于 ClosedXML，支持 .xlsx 格式逐行解析与导入模板生成）。</summary>
     public sealed class ExcelImporter : IImporter
     {
+        /// <summary>允许值下拉的隐藏工作表名（字面列表超长时承载引用区域）。</summary>
+        private const string AllowedValuesSheetName = "下拉选项";
+
+        /// <summary>Excel 数据校验公式上限（255 字符）；字面列表超限时改写隐藏工作表的引用区域。</summary>
+        private const int ValidationFormulaMaxLength = 255;
+
         /// <inheritdoc />
         public IAsyncEnumerable<ParsedRow<T>> ImportAsync<T>(
             Stream stream,
@@ -303,12 +309,6 @@ namespace Xbc.ImportExport.Excel
                 throw new TemplateException($"Excel 模板生成失败：{ex.Message}", ex);
             }
         }
-
-        /// <summary>允许值下拉的隐藏工作表名（字面列表超长时承载引用区域）。</summary>
-        private const string AllowedValuesSheetName = "下拉选项";
-
-        /// <summary>Excel 数据校验公式上限（255 字符）；字面列表超限时改写隐藏工作表的引用区域。</summary>
-        private const int ValidationFormulaMaxLength = 255;
 
         private static void AddDataValidations(IXLWorkbook workbook, IXLWorksheet worksheet, List<TemplateColumn> columns)
         {
